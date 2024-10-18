@@ -1,0 +1,10 @@
+/api.py
+/app
+/app.spec
+/dist
+/hq.py
+/hq.spec
+/main.py
+/test.py
+/view.py
+/__pycache__

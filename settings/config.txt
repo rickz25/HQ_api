@@ -1,0 +1,24 @@
+[hq_config]
+
+#IP and port of HQ
+HQ_IP=192.168.153.1
+Port=444
+
+#DB Driver
+db_driver=ODBC Driver 17 for SQL Server
+
+#DB Host
+db_host=localhost
+
+#DB Name
+db_name=ayalatms_main_server
+
+#DB Username
+db_username=
+
+#DB Password
+db_password=
+
+#Additional details
+db_add_details=TrustServerCertificate=yes;Trusted_Connection=yes;
+
