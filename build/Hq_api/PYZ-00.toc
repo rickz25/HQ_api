@@ -1,5 +1,5 @@
 ('C:\\Users\\rickz\\OneDrive\\Desktop\\Projects\\Apps\\HQ '
- 'App\\HQ_scheduler\\build\\Hq_api\\PYZ-00.pyz',
+ 'App\\HQ_api\\build\\Hq_api\\PYZ-00.pyz',
  [('__future__',
    'C:\\Users\\rickz\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\__future__.py',
    'PYMODULE'),
@@ -491,7 +491,7 @@
    'PYMODULE'),
   ('controller',
    'C:\\Users\\rickz\\OneDrive\\Desktop\\Projects\\Apps\\HQ '
-   'App\\HQ_scheduler\\controller.py',
+   'App\\HQ_api\\controller.py',
    'PYMODULE'),
   ('copy',
    'C:\\Users\\rickz\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\copy.py',
@@ -533,8 +533,7 @@
    'C:\\Users\\rickz\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\datetime.py',
    'PYMODULE'),
   ('db',
-   'C:\\Users\\rickz\\OneDrive\\Desktop\\Projects\\Apps\\HQ '
-   'App\\HQ_scheduler\\db.py',
+   'C:\\Users\\rickz\\OneDrive\\Desktop\\Projects\\Apps\\HQ App\\HQ_api\\db.py',
    'PYMODULE'),
   ('decimal',
    'C:\\Users\\rickz\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\decimal.py',
@@ -1688,7 +1687,7 @@
    'PYMODULE'),
   ('model',
    'C:\\Users\\rickz\\OneDrive\\Desktop\\Projects\\Apps\\HQ '
-   'App\\HQ_scheduler\\model.py',
+   'App\\HQ_api\\model.py',
    'PYMODULE'),
   ('multidict',
    'C:\\Users\\rickz\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\multidict\\__init__.py',
@@ -2589,7 +2588,7 @@
    'PYMODULE'),
   ('test',
    'C:\\Users\\rickz\\OneDrive\\Desktop\\Projects\\Apps\\HQ '
-   'App\\HQ_scheduler\\test.py',
+   'App\\HQ_api\\test.py',
    'PYMODULE'),
   ('textwrap',
    'C:\\Users\\rickz\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\textwrap.py',
@@ -2683,7 +2682,7 @@
    'PYMODULE'),
   ('view',
    'C:\\Users\\rickz\\OneDrive\\Desktop\\Projects\\Apps\\HQ '
-   'App\\HQ_scheduler\\view.py',
+   'App\\HQ_api\\view.py',
    'PYMODULE'),
   ('webbrowser',
    'C:\\Users\\rickz\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\webbrowser.py',

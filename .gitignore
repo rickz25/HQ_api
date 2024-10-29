@@ -1,6 +1,7 @@
 /api.py
 /app
 /app.spec
+/build
 /dist
 /hq.py
 /hq.spec

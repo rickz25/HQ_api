@@ -1,154 +1,196 @@
 from db import SQLServer
 from datetime import datetime
-db = SQLServer() 
+db = SQLServer()
+import logging
+import configparser
+
+# Create and configure logger
+logging.basicConfig(filename="Logs/unoLog/logs.log",
+                    format='%(asctime)s %(message)s',
+                    filemode='w')
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
+config = configparser.ConfigParser()
+config.read(r'settings/config.txt') 
+
+bulklimit =  config.get('hq_config', 'bulk_limit')
+if bulklimit == "":
+    bulklimit=100
+else:
+   bulklimit = int(bulklimit)
 
 
 class TaskModel:
 
     # Insert Mapping Header
     def insertMappingHeader(self, jsondata):
-        sqlstatement = ''
-        TABLE_NAME = "dbo.mapping_header"
-        for i in jsondata:
-            d = parsing_date(i['TRN_DATE'])
-            trn_date = d.strftime('%Y-%m-%d')
-            merchant_code = i['MERCHANT_CODE']
-            mall_code = i['MALL_CODE']
-            template = i['TEMPLATE']
-            sql =f"SELECT count(1) from {TABLE_NAME} WHERE TRN_DATE='{trn_date}' AND MERCHANT_CODE='{merchant_code}' AND MALL_CODE= {mall_code} AND TEMPLATE= {template}"
-            exist = db.fetchOne(sql)
-            if exist:
-                sql =f"DELETE from {TABLE_NAME} WHERE TRN_DATE='{trn_date}' AND MERCHANT_CODE='{merchant_code}' AND MALL_CODE= {mall_code} AND TEMPLATE= {template}"
-                db.remove(sql)
-            keylist = "("
-            valuelist = "("
-            firstPair = True
-            for key, value in i.items():
-                if value==None:
-                    continue
-                if not firstPair:
-                    keylist += ", "
-                    valuelist += ", "
-                firstPair = False
-                keylist += key
-                if isinstance(value, str):
-                    valuelist += "'" + value + "'"
-                else:
-                  valuelist += str(value)
-            keylist += ")"
-            valuelist += ")"
-            sqlstatement += "INSERT INTO " + TABLE_NAME + " " + keylist + " VALUES " + valuelist + "\n"
-        return db.insert(sqlstatement)
+        try:
+            sqlstatement = ''
+            TABLE_NAME = "dbo.mapping_header"
+            for i in jsondata:
+                d = parsing_date(i['TRN_DATE'])
+                trn_date = d.strftime('%Y-%m-%d')
+                merchant_code = (i['MERCHANT_CODE']).strip()
+                mall_code = i['MALL_CODE']
+                template = i['TEMPLATE']
+                sql =f"SELECT count(1) from {TABLE_NAME} WHERE TRN_DATE='{trn_date}' AND MERCHANT_CODE='{merchant_code}' AND MALL_CODE= {mall_code} AND TEMPLATE= {template}"
+                exist = db.fetchOne(sql)
+                if exist:
+                    sql =f"DELETE from {TABLE_NAME} WHERE TRN_DATE='{trn_date}' AND MERCHANT_CODE='{merchant_code}' AND MALL_CODE= {mall_code} AND TEMPLATE= {template}"
+                    db.remove(sql)
+                keylist = "("
+                valuelist = "("
+                firstPair = True
+                for key, value in i.items():
+                    if value==None:
+                        continue
+                    if not firstPair:
+                        keylist += ", "
+                        valuelist += ", "
+                    firstPair = False
+                    keylist += key
+                    if isinstance(value, str):
+                        value=str2(value)
+                        valuelist += "'" + value + "'"
+                    else:
+                        valuelist += str(value)
+                keylist += ")"
+                valuelist += ")"
+                sqlstatement += "INSERT INTO " + TABLE_NAME + " " + keylist + " VALUES " + valuelist + "\n"
+            return db.insert(sqlstatement)
+        except Exception as e:
+            logger.exception("Exception occurred when Insert Mapping_header: %s", str(e))
     
     # Insert Transaction
     def insertTransaction(self, jsondata):
-        sqlstatement = ''
-        TABLE_NAME = "dbo.transaction_mapping"
-        for i in jsondata:
-            d = parsing_date(i['TRN_DATE'])
-            trn_date = d.strftime('%Y-%m-%d')
-            CCCODE = i['CCCODE']
-            mall_code = i['MALL_CODE']
-            TER_NO = i['TER_NO']
-            TRANSACTION_NO= i['TRANSACTION_NO']
-            sql =f"SELECT count(1) from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND CCCODE='{CCCODE}' AND MALL_CODE= {mall_code} AND TER_NO= '{TER_NO}' AND TRANSACTION_NO='{TRANSACTION_NO}'"
-            exist = db.fetchOne(sql)
-            if exist:
-                sql =f"DELETE from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND CCCODE='{CCCODE}' AND MALL_CODE= {mall_code} AND TER_NO= '{TER_NO}' AND TRANSACTION_NO='{TRANSACTION_NO}'"
-                db.remove(sql)
-            keylist = "("
-            valuelist = "("
-            firstPair = True
-            for key, value in i.items():
-                if value==None:
-                    continue
-                if not firstPair:
-                    keylist += ", "
-                    valuelist += ", "
-                firstPair = False
-                keylist += key
-                if isinstance(value, str):
-                    value=str2(value)
-                    valuelist += "'" + value + "'"
-                else:
-                    valuelist += str(value)
-            keylist += ")"
-            valuelist += ")"
-            sqlstatement += "INSERT INTO " + TABLE_NAME + " " + keylist + " VALUES " + valuelist + "\n"
-        return db.insert(sqlstatement)
+        try:
+            # inc=0
+            sqlstatement = ''
+            # datalen =len(jsondata)
+            TABLE_NAME = "dbo.transaction_mapping"
+            for i in jsondata:
+                # inc +=1
+                # datalen -=1
+                d = parsing_date(i['TRN_DATE'])
+                trn_date = d.strftime('%Y-%m-%d')
+                CCCODE = (i['CCCODE']).strip()
+                mall_code = i['MALL_CODE']
+                TER_NO = (i['TER_NO']).strip()
+                TRANSACTION_NO = (i['TRANSACTION_NO']).strip()
+                sql =f"SELECT count(1) from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND CCCODE='{CCCODE}' AND MALL_CODE= {mall_code} AND TER_NO= '{TER_NO}' AND TRANSACTION_NO='{TRANSACTION_NO}'"
+                exist = db.fetchOne(sql)
+                if exist:
+                    sql =f"DELETE from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND CCCODE='{CCCODE}' AND MALL_CODE= {mall_code} AND TER_NO= '{TER_NO}' AND TRANSACTION_NO='{TRANSACTION_NO}'"
+                    db.remove(sql)
+                keylist = "("
+                valuelist = "("
+                firstPair = True
+                for key, value in i.items():
+                    if value==None:
+                        continue
+                    if not firstPair:
+                        keylist += ", "
+                        valuelist += ", "
+                    firstPair = False
+                    keylist += key
+                    if isinstance(value, str):
+                        value=str2(value)
+                        valuelist += "'" + value + "'"
+                    else:
+                        valuelist += str(value)
+                keylist += ")"
+                valuelist += ")"
+                sqlstatement = "INSERT INTO " + TABLE_NAME + " " + keylist + " VALUES " + valuelist
+                db.insert(sqlstatement)
+                # bulk sending
+                # if inc==bulklimit or inc==datalen:
+                #     db.insert(sqlstatement)
+                #     sqlstatement=''
+                #     inc=0
+            # return db.insert(sqlstatement)
+        except Exception as e:
+            logger.exception("Exception occurred when Insert Transaction: %s", str(e))
     
     # Insert Daily
     def insertDaily(self, jsondata):
-        sqlstatement = ''
-        TABLE_NAME = "dbo.daily_mapping"
-        for i in jsondata:
-            d = parsing_date(i['TRN_DATE'])
-            trn_date = d.strftime('%Y-%m-%d')
-            CCCODE = i['CCCODE']
-            mall_code = i['MALL_CODE']
-            TER_NO = i['TER_NO']
-            sql =f"SELECT count(1) from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND CCCODE='{CCCODE}' AND MALL_CODE= {mall_code} AND TER_NO= '{TER_NO}'"
-            exist = db.fetchOne(sql)
-            if exist:
-                sql =f"DELETE from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND CCCODE='{CCCODE}' AND MALL_CODE= {mall_code} AND TER_NO= '{TER_NO}'"
-                db.remove(sql)
-            keylist = "("
-            valuelist = "("
-            firstPair = True
-            for key, value in i.items():
-                if value==None:
-                    continue
-                if not firstPair:
-                    keylist += ", "
-                    valuelist += ", "
-                firstPair = False
-                keylist += key
-                if isinstance(value, str):
-                    value=str2(value)
-                    valuelist += "'" + value + "'"
-                else:
-                    valuelist += str(value)
-            keylist += ")"
-            valuelist += ")"
-            sqlstatement += "INSERT INTO " + TABLE_NAME + " " + keylist + " VALUES " + valuelist + "\n"
-        return db.insert(sqlstatement)
+        try:
+            sqlstatement = ''
+            TABLE_NAME = "dbo.daily_mapping"
+            for i in jsondata:
+                d = parsing_date(i['TRN_DATE'])
+                trn_date = d.strftime('%Y-%m-%d')
+                CCCODE = (i['CCCODE']).strip()
+                mall_code = i['MALL_CODE']
+                TER_NO = i['TER_NO']
+                sql =f"SELECT count(1) from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND CCCODE='{CCCODE}' AND MALL_CODE= {mall_code} AND TER_NO= '{TER_NO}'"
+                exist = db.fetchOne(sql)
+                if exist:
+                    sql =f"DELETE from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND CCCODE='{CCCODE}' AND MALL_CODE= {mall_code} AND TER_NO= '{TER_NO}'"
+                    db.remove(sql)
+                keylist = "("
+                valuelist = "("
+                firstPair = True
+                for key, value in i.items():
+                    if value==None:
+                        continue
+                    if not firstPair:
+                        keylist += ", "
+                        valuelist += ", "
+                    firstPair = False
+                    keylist += key
+                    if isinstance(value, str):
+                        value=str2(value)
+                        valuelist += "'" + value + "'"
+                    else:
+                        valuelist += str(value)
+                keylist += ")"
+                valuelist += ")"
+                sqlstatement = "INSERT INTO " + TABLE_NAME + " " + keylist + " VALUES " + valuelist + " \n"
+                # bulk sending 
+                db.insert(sqlstatement)
+        except Exception as e:
+            logger.exception("Exception occurred when Insert Daily: %s", str(e))
     
     # Inser MappingLogs
     def insertMappingLogs(self, jsondata):
-        sqlstatement = ''
-        TABLE_NAME = "dbo.mapping_log"
-        for i in jsondata:
-            d = parsing_date(i['TRN_DATE'])
-            trn_date = d.strftime('%Y-%m-%d')
-            MERCHANT_CODE = i['MERCHANT_CODE']
-            mall_code = i['MALL_CODE']
-            TEMPLATE = i['TEMPLATE']
-            TERMINAL_NO = i['TERMINAL_NO']
-            sql =f"SELECT count(1) from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND MERCHANT_CODE='{MERCHANT_CODE}' AND MALL_CODE= {mall_code} AND TEMPLATE= {TEMPLATE} AND TERMINAL_NO= '{TERMINAL_NO}'"
-            exist = db.fetchOne(sql)
-            if exist:
-                sql =f"DELETE from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND MERCHANT_CODE='{MERCHANT_CODE}' AND MALL_CODE= {mall_code} AND TEMPLATE= {TEMPLATE} AND TERMINAL_NO= '{TERMINAL_NO}'"
-                db.remove(sql)
-            keylist = "("
-            valuelist = "("
-            firstPair = True
-            for key, value in i.items():
-                if value==None:
-                    continue
-                if not firstPair:
-                    keylist += ", "
-                    valuelist += ", "
-                firstPair = False
-                keylist += key
-                if isinstance(value, str):
-                    value=str2(value)
-                    valuelist += "'" + value + "'"
-                else:
-                    valuelist += str(value)
-            keylist += ")"
-            valuelist += ")"
-            sqlstatement += "INSERT INTO " + TABLE_NAME + " " + keylist + " VALUES " + valuelist + " \n"
-        return db.insert(sqlstatement)
+        try:
+            sqlstatement = ''
+            TABLE_NAME = "dbo.mapping_log"
+            for i in jsondata:
+                d = parsing_date(i['TRN_DATE'])
+                trn_date = d.strftime('%Y-%m-%d')
+                MERCHANT_CODE = (i['MERCHANT_CODE']).strip()
+                mall_code = i['MALL_CODE']
+                TEMPLATE = i['TEMPLATE']
+                TERMINAL_NO = i['TERMINAL_NO']
+                sql =f"SELECT count(1) from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND MERCHANT_CODE='{MERCHANT_CODE}' AND MALL_CODE= {mall_code} AND TEMPLATE= {TEMPLATE} AND TERMINAL_NO= '{TERMINAL_NO}'"
+                exist = db.fetchOne(sql)
+                if exist:
+                    sql =f"DELETE from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND MERCHANT_CODE='{MERCHANT_CODE}' AND MALL_CODE= {mall_code} AND TEMPLATE= {TEMPLATE} AND TERMINAL_NO= '{TERMINAL_NO}'"
+                    db.remove(sql)
+                keylist = "("
+                valuelist = "("
+                firstPair = True
+                for key, value in i.items():
+                    if value==None:
+                        continue
+                    if not firstPair:
+                        keylist += ", "
+                        valuelist += ", "
+                    firstPair = False
+                    keylist += key
+                    if isinstance(value, str):
+                        value=str2(value)
+                        valuelist += "'" + value + "'"
+                    else:
+                        valuelist += str(value)
+                keylist += ")"
+                valuelist += ")"
+                sqlstatement += "INSERT INTO " + TABLE_NAME + " " + keylist + " VALUES " + valuelist + " \n"
+            return db.insert(sqlstatement)
+        except Exception as e:
+            logger.exception("Exception occurred when Insert Mapping_log: %s", str(e))
     def getMallServer(self):
         sql=f"SELECT MALL_CODE,IP_ADDRESS,PORT FROM dbo.mall_server ORDER BY MALL_CODE ASC;"
         return db.fetchAll(sql)

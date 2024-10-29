@@ -22,3 +22,5 @@ db_password=
 #Additional details
 db_add_details=TrustServerCertificate=yes;Trusted_Connection=yes;
 
+#Bulk limit
+bulk_limit=100
