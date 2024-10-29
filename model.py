@@ -68,6 +68,7 @@ class TaskModel:
                 firstPair = False
                 keylist += key
                 if isinstance(value, str):
+                    value=str2(value)
                     valuelist += "'" + value + "'"
                 else:
                     valuelist += str(value)
@@ -103,6 +104,7 @@ class TaskModel:
                 firstPair = False
                 keylist += key
                 if isinstance(value, str):
+                    value=str2(value)
                     valuelist += "'" + value + "'"
                 else:
                     valuelist += str(value)
@@ -139,12 +141,13 @@ class TaskModel:
                 firstPair = False
                 keylist += key
                 if isinstance(value, str):
+                    value=str2(value)
                     valuelist += "'" + value + "'"
                 else:
                     valuelist += str(value)
             keylist += ")"
             valuelist += ")"
-            sqlstatement += "INSERT INTO " + TABLE_NAME + " " + keylist + " VALUES " + valuelist + "\n"
+            sqlstatement += "INSERT INTO " + TABLE_NAME + " " + keylist + " VALUES " + valuelist + " \n"
         return db.insert(sqlstatement)
     def getMallServer(self):
         sql=f"SELECT MALL_CODE,IP_ADDRESS,PORT FROM dbo.mall_server ORDER BY MALL_CODE ASC;"
@@ -225,7 +228,10 @@ def parsing_date(text):
             return datetime.strptime(text, fmt)
         except ValueError:
             pass
-    raise ValueError('no valid date format found')       
+    raise ValueError('no valid date format found')   
+ 
+def str2(words):
+    return str(words).replace("'", '"')   
             
 
         
