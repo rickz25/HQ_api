@@ -1,6 +1,7 @@
 import sqlite3
 import pyodbc
 import configparser
+import time
 
 config = configparser.ConfigParser()
 config.read(r'settings/config.txt') 
@@ -72,11 +73,27 @@ class SQLServer:
          results.append(dict(zip(columns, row)))
         return results
     def insert(self, statement):
-        self.cursor.execute(statement)
-        self.conn.commit()
+        retry_flag = 3
+        retry_count = 0
+        while retry_count < retry_flag:
+            try:
+                self.cursor.execute(statement)
+                self.conn.commit()
+                break
+            except Exception as e:
+                retry_count = retry_count + 1
+                time.sleep(1)
     def remove(self, statement):
-        self.cursor.execute(statement)
-        self.conn.commit()
+        retry_flag = 3
+        retry_count = 0
+        while retry_count < retry_flag:
+            try:
+                self.cursor.execute(statement)
+                self.conn.commit()
+                break
+            except Exception as e:
+                retry_count = retry_count + 1
+                time.sleep(1)
     def rows(self):
         return self.cursor.rowcount
 

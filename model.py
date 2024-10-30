@@ -3,6 +3,7 @@ from datetime import datetime
 db = SQLServer()
 import logging
 import configparser
+from itertools import islice
 
 # Create and configure logger
 logging.basicConfig(filename="Logs/unoLog/logs.log",
@@ -19,7 +20,6 @@ if bulklimit == "":
     bulklimit=100
 else:
    bulklimit = int(bulklimit)
-
 
 class TaskModel:
 
@@ -65,89 +65,80 @@ class TaskModel:
     # Insert Transaction
     def insertTransaction(self, jsondata):
         try:
-            # inc=0
-            sqlstatement = ''
-            # datalen =len(jsondata)
             TABLE_NAME = "dbo.transaction_mapping"
-            for i in jsondata:
-                # inc +=1
-                # datalen -=1
-                d = parsing_date(i['TRN_DATE'])
-                trn_date = d.strftime('%Y-%m-%d')
-                CCCODE = (i['CCCODE']).strip()
-                mall_code = i['MALL_CODE']
-                TER_NO = (i['TER_NO']).strip()
-                TRANSACTION_NO = (i['TRANSACTION_NO']).strip()
-                sql =f"SELECT count(1) from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND CCCODE='{CCCODE}' AND MALL_CODE= {mall_code} AND TER_NO= '{TER_NO}' AND TRANSACTION_NO='{TRANSACTION_NO}'"
-                exist = db.fetchOne(sql)
-                if exist:
-                    sql =f"DELETE from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND CCCODE='{CCCODE}' AND MALL_CODE= {mall_code} AND TER_NO= '{TER_NO}' AND TRANSACTION_NO='{TRANSACTION_NO}'"
-                    db.remove(sql)
-                keylist = "("
-                valuelist = "("
-                firstPair = True
-                for key, value in i.items():
-                    if value==None:
-                        continue
-                    if not firstPair:
-                        keylist += ", "
-                        valuelist += ", "
-                    firstPair = False
-                    keylist += key
-                    if isinstance(value, str):
-                        value=str2(value)
-                        valuelist += "'" + value + "'"
-                    else:
-                        valuelist += str(value)
-                keylist += ")"
-                valuelist += ")"
-                sqlstatement = "INSERT INTO " + TABLE_NAME + " " + keylist + " VALUES " + valuelist
+            for batch in batched(jsondata, bulklimit):
+                sqlstatement=''
+                for i in batch:
+                    d = parsing_date(i['TRN_DATE'])
+                    trn_date = d.strftime('%Y-%m-%d')
+                    CCCODE = (i['CCCODE']).strip()
+                    mall_code = i['MALL_CODE']
+                    TER_NO = (i['TER_NO']).strip()
+                    TRANSACTION_NO = (i['TRANSACTION_NO']).strip()
+                    sql =f"SELECT count(1) from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND CCCODE='{CCCODE}' AND MALL_CODE= {mall_code} AND TER_NO= '{TER_NO}' AND TRANSACTION_NO='{TRANSACTION_NO}'"
+                    exist = db.fetchOne(sql)
+                    if exist:
+                        sql =f"DELETE from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND CCCODE='{CCCODE}' AND MALL_CODE= {mall_code} AND TER_NO= '{TER_NO}' AND TRANSACTION_NO='{TRANSACTION_NO}'"
+                        db.remove(sql)
+                    keylist = "("
+                    valuelist = "("
+                    firstPair = True
+                    for key, value in i.items():
+                        if value==None:
+                            continue
+                        if not firstPair:
+                            keylist += ", "
+                            valuelist += ", "
+                        firstPair = False
+                        keylist += key
+                        if isinstance(value, str):
+                            value=str2(value)
+                            valuelist += "'" + value + "'"
+                        else:
+                            valuelist += str(value)
+                    keylist += ")"
+                    valuelist += ")"
+                    sqlstatement += "INSERT INTO " + TABLE_NAME + " " + keylist + " VALUES " + valuelist + "\n"
                 db.insert(sqlstatement)
-                # bulk sending
-                # if inc==bulklimit or inc==datalen:
-                #     db.insert(sqlstatement)
-                #     sqlstatement=''
-                #     inc=0
-            # return db.insert(sqlstatement)
         except Exception as e:
             logger.exception("Exception occurred when Insert Transaction: %s", str(e))
     
     # Insert Daily
     def insertDaily(self, jsondata):
         try:
-            sqlstatement = ''
             TABLE_NAME = "dbo.daily_mapping"
-            for i in jsondata:
-                d = parsing_date(i['TRN_DATE'])
-                trn_date = d.strftime('%Y-%m-%d')
-                CCCODE = (i['CCCODE']).strip()
-                mall_code = i['MALL_CODE']
-                TER_NO = i['TER_NO']
-                sql =f"SELECT count(1) from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND CCCODE='{CCCODE}' AND MALL_CODE= {mall_code} AND TER_NO= '{TER_NO}'"
-                exist = db.fetchOne(sql)
-                if exist:
-                    sql =f"DELETE from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND CCCODE='{CCCODE}' AND MALL_CODE= {mall_code} AND TER_NO= '{TER_NO}'"
-                    db.remove(sql)
-                keylist = "("
-                valuelist = "("
-                firstPair = True
-                for key, value in i.items():
-                    if value==None:
-                        continue
-                    if not firstPair:
-                        keylist += ", "
-                        valuelist += ", "
-                    firstPair = False
-                    keylist += key
-                    if isinstance(value, str):
-                        value=str2(value)
-                        valuelist += "'" + value + "'"
-                    else:
-                        valuelist += str(value)
-                keylist += ")"
-                valuelist += ")"
-                sqlstatement = "INSERT INTO " + TABLE_NAME + " " + keylist + " VALUES " + valuelist + " \n"
-                # bulk sending 
+            for batch in batched(jsondata, bulklimit):
+                sqlstatement = ''
+                for i in batch:
+                    d = parsing_date(i['TRN_DATE'])
+                    trn_date = d.strftime('%Y-%m-%d')
+                    CCCODE = (i['CCCODE']).strip()
+                    mall_code = i['MALL_CODE']
+                    TER_NO = i['TER_NO']
+                    sql =f"SELECT count(1) from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND CCCODE='{CCCODE}' AND MALL_CODE= {mall_code} AND TER_NO= '{TER_NO}'"
+                    exist = db.fetchOne(sql)
+                    if exist:
+                        sql =f"DELETE from {TABLE_NAME} WHERE CAST(TRN_DATE AS DATE)='{trn_date}' AND CCCODE='{CCCODE}' AND MALL_CODE= {mall_code} AND TER_NO= '{TER_NO}'"
+                        db.remove(sql)
+                    keylist = "("
+                    valuelist = "("
+                    firstPair = True
+                    for key, value in i.items():
+                        if value==None:
+                            continue
+                        if not firstPair:
+                            keylist += ", "
+                            valuelist += ", "
+                        firstPair = False
+                        keylist += key
+                        if isinstance(value, str):
+                            value=str2(value)
+                            valuelist += "'" + value + "'"
+                        else:
+                            valuelist += str(value)
+                    keylist += ")"
+                    valuelist += ")"
+                    sqlstatement += "INSERT INTO " + TABLE_NAME + " " + keylist + " VALUES " + valuelist + " \n"
                 db.insert(sqlstatement)
         except Exception as e:
             logger.exception("Exception occurred when Insert Daily: %s", str(e))
@@ -273,7 +264,15 @@ def parsing_date(text):
     raise ValueError('no valid date format found')   
  
 def str2(words):
-    return str(words).replace("'", '"')   
+    return str(words).replace("'", '"')  
+
+def batched(iterable, n):
+    # batched('ABCDEFG', 3) → ABC DEF G
+    if n < 1:
+        raise ValueError('n must be at least one')
+    iterator = iter(iterable)
+    while batch := tuple(islice(iterator, n)):
+        yield batch
             
 
         
