@@ -17,10 +17,10 @@ class TaskController:
     def __init__(self, model):
         self.model = model
     def insert_data(self, data):
-
         header=[]
         log=[]
         tag={}
+        daily_tag=[]
         response={}
         errorMessage = {}
 
@@ -36,6 +36,13 @@ class TaskController:
                 if TransactionMapping:
                     self.model.insertTransaction(TransactionMapping)
                 if DailyMapping:
+                    for i in DailyMapping:
+                        d = parsing_date(i['TRN_DATE'])
+                        trn_date = d.strftime('%Y-%m-%d')
+                        ter_no = (i['TER_NO']).strip()
+                        cccode = (i['CCCODE']).strip()
+                        unique_id =f"{cccode}_{trn_date}_{ter_no}"
+                        daily_tag.append(unique_id)
                     self.model.insertDaily(DailyMapping)
 
             MappingLogs = data['MappingLogs']
@@ -43,8 +50,8 @@ class TaskController:
                 for l in MappingLogs:
                     d = parsing_date(l['TRN_DATE'])
                     trn_date = d.strftime('%Y-%m-%d')
-                    merchant_code = rmv_space(l['MERCHANT_CODE'])
-                    ter_no = rmv_space(l['TERMINAL_NO'])
+                    merchant_code = (l['MERCHANT_CODE']).strip()
+                    ter_no = (l['TERMINAL_NO']).strip()
                     template = l['TEMPLATE']
                     unique_id =f"{merchant_code}_{trn_date}_{ter_no}_{template}"
                     log.append(unique_id)
@@ -58,6 +65,7 @@ class TaskController:
         if str_error is None:
             tag['header']=header
             tag['logs']=log
+            tag['daily']=daily_tag
             response['status']=0
             response['message']='success'
             response['data']=tag
