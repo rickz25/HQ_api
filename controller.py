@@ -23,28 +23,32 @@ class TaskController:
         daily_tag=[]
         response={}
         errorMessage = {}
-
         try:
+            # Mapping header
             MappingHeader = data['MappingHeader']
             if MappingHeader:
                 for i in MappingHeader:
                     header.append(i['HEADER_ID'])
-                TransactionMapping = data['TransactionMapping']
-                DailyMapping = data['DailyMapping']
-                
                 self.model.insertMappingHeader(MappingHeader)
+
+                # Transaction mapping
+                TransactionMapping = data['TransactionMapping']
                 if TransactionMapping:
                     self.model.insertTransaction(TransactionMapping)
-                if DailyMapping:
-                    for i in DailyMapping:
-                        d = parsing_date(i['TRN_DATE'])
-                        trn_date = d.strftime('%Y-%m-%d')
-                        ter_no = (i['TER_NO']).strip()
-                        cccode = (i['CCCODE']).strip()
-                        unique_id =f"{cccode}_{trn_date}_{ter_no}"
-                        daily_tag.append(unique_id)
-                    self.model.insertDaily(DailyMapping)
 
+            # Daily mapping
+            DailyMapping = data['DailyMapping']
+            if DailyMapping:
+                for i in DailyMapping:
+                    d = parsing_date(i['TRN_DATE'])
+                    trn_date = d.strftime('%Y-%m-%d')
+                    ter_no = (i['TER_NO']).strip()
+                    cccode = (i['CCCODE']).strip()
+                    unique_id =f"{cccode}_{trn_date}_{ter_no}"
+                    daily_tag.append(unique_id)
+                self.model.insertDaily(DailyMapping)
+                
+            # Mapping log
             MappingLogs = data['MappingLogs']
             if MappingLogs:
                 for l in MappingLogs:

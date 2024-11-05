@@ -1,0 +1,6 @@
+2024-11-05 10:35:15,344 Exception occurred when Insert Daily: 'MALL_CODE'
+Traceback (most recent call last):
+  File "C:\Users\rickz\OneDrive\Desktop\Projects\Apps\HQ App\HQ_api\model.py", line 116, in insertDaily
+    mall_code = i['MALL_CODE']
+                ~^^^^^^^^^^^^^
+KeyError: 'MALL_CODE'
