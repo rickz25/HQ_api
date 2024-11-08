@@ -4,6 +4,14 @@ import json
 from datetime import date, datetime
 from decimal import Decimal
 from aiohttp import web
+import logging
+
+# Create and configure logger
+logging.basicConfig(filename="Logs/unoLog/logs.log",
+                    format='%(asctime)s %(message)s',
+                    filemode='w')
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 # convertion of datetime and decimal
 def default(obj):
@@ -40,12 +48,13 @@ class TaskController:
             DailyMapping = data['DailyMapping']
             if DailyMapping:
                 for i in DailyMapping:
-                    d = parsing_date(i['TRN_DATE'])
-                    trn_date = d.strftime('%Y-%m-%d')
+                    # return i['TRN_DATE']
+                    # d = parsing_date(i['TRN_DATE'])
+                    trn_date = (i['TRN_DATE']).strip()
                     ter_no = (i['TER_NO']).strip()
                     cccode = (i['CCCODE']).strip()
-                    unique_id =f"{cccode}_{trn_date}_{ter_no}"
-                    daily_tag.append(unique_id)
+                    tag_id =f"{cccode}_{trn_date}_{ter_no}"
+                    daily_tag.append(tag_id)
                 self.model.insertDaily(DailyMapping)
                 
             # Mapping log
@@ -53,7 +62,7 @@ class TaskController:
             if MappingLogs:
                 for l in MappingLogs:
                     d = parsing_date(l['TRN_DATE'])
-                    trn_date = d.strftime('%Y-%m-%d')
+                    trn_date = datetime.date(d)
                     merchant_code = (l['MERCHANT_CODE']).strip()
                     ter_no = (l['TERMINAL_NO']).strip()
                     template = l['TEMPLATE']
@@ -63,6 +72,7 @@ class TaskController:
             str_error = None
         except Exception as e:
             str_error = str(e)
+            logger.exception("Exception occurred: %s", str_error)
             errorMessage['status']=1
             errorMessage['message'] = str_error
         

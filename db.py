@@ -66,12 +66,19 @@ class SQLServer:
         self.cursor.execute(sql)
         return self.cursor.fetchone()
     def fetchAll(self,sql):
-        self.cursor.execute(sql)
-        columns = [column[0] for column in  self.cursor.description]
-        results = []
-        for row in  self.cursor.fetchall():
-         results.append(dict(zip(columns, row)))
-        return results
+        retry_flag = 3
+        retry_count = 0
+        while retry_count < retry_flag:
+            try:
+                self.cursor.execute(sql)
+                columns = [column[0] for column in  self.cursor.description]
+                results = []
+                for row in  self.cursor.fetchall():
+                    results.append(dict(zip(columns, row)))
+                return results
+            except Exception as e:
+                retry_count = retry_count + 1
+                time.sleep(1)
     def insert(self, statement):
         retry_flag = 3
         retry_count = 0

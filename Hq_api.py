@@ -5,6 +5,22 @@ from model import TaskModel
 from controller import TaskController
 import configparser 
 import logging
+import psutil
+import os
+
+# kill process when double run the program
+process_to_kill = "Hq_api.exe"
+
+# get PID of the current process
+my_pid = os.getpid()
+
+# iterate through all running processes
+for p in psutil.process_iter():
+    # if it's process we're looking for...
+    if p.name() == process_to_kill:
+        # and if the process has a different PID than the current process, kill it
+        if not p.pid == my_pid:
+            p.terminate()
 
 
 # Create and configure logger
