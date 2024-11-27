@@ -24,3 +24,6 @@ db_add_details=TrustServerCertificate=yes;Trusted_Connection=yes;
 
 #Bulk limit
 bulk_limit=100
+
+#handle task per request
+worker=5

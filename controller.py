@@ -25,19 +25,16 @@ class TaskController:
     def __init__(self, model):
         self.model = model
     def insert_data(self, data):
-        header=[]
-        log=[]
         tag={}
-        daily_tag=[]
         response={}
         errorMessage = {}
         try:
             # Mapping header
             MappingHeader = data['MappingHeader']
             if MappingHeader:
-                for i in MappingHeader:
-                    header.append(i['HEADER_ID'])
-                self.model.insertMappingHeader(MappingHeader)
+                header_tag = self.model.insertMappingHeader(MappingHeader)
+            else: 
+                header_tag=[]
 
                 # Transaction mapping
                 TransactionMapping = data['TransactionMapping']
@@ -47,29 +44,19 @@ class TaskController:
             # Daily mapping
             DailyMapping = data['DailyMapping']
             if DailyMapping:
-                for i in DailyMapping:
-                    # return i['TRN_DATE']
-                    # d = parsing_date(i['TRN_DATE'])
-                    trn_date = (i['TRN_DATE']).strip()
-                    ter_no = (i['TER_NO']).strip()
-                    cccode = (i['CCCODE']).strip()
-                    tag_id =f"{cccode}_{trn_date}_{ter_no}"
-                    daily_tag.append(tag_id)
-                self.model.insertDaily(DailyMapping)
+                daily_tag = self.model.insertDaily(DailyMapping)
+            else: 
+                daily_tag=[]
                 
             # Mapping log
             MappingLogs = data['MappingLogs']
             if MappingLogs:
-                for l in MappingLogs:
-                    d = parsing_date(l['TRN_DATE'])
-                    trn_date = datetime.date(d)
-                    merchant_code = (l['MERCHANT_CODE']).strip()
-                    ter_no = (l['TERMINAL_NO']).strip()
-                    template = l['TEMPLATE']
-                    unique_id =f"{merchant_code}_{trn_date}_{ter_no}_{template}"
-                    log.append(unique_id)
-                self.model.insertMappingLogs(MappingLogs)
+                log_tag = self.model.insertMappingLogs(MappingLogs)
+            else: 
+                log_tag=[]
+
             str_error = None
+
         except Exception as e:
             str_error = str(e)
             logger.exception("Exception occurred: %s", str_error)
@@ -77,8 +64,8 @@ class TaskController:
             errorMessage['message'] = str_error
         
         if str_error is None:
-            tag['header']=header
-            tag['logs']=log
+            tag['header']=header_tag
+            tag['logs']=log_tag
             tag['daily']=daily_tag
             response['status']=0
             response['message']='success'
@@ -115,18 +102,19 @@ class TaskController:
             datas["pos_vendor"] = self.model.getPosVendor(mallcode)
             datas["pos_vendor_contacts"] = self.model.getPosVendorContacts(mallcode)
             datas["pos_vendor_category"] = self.model.getPosVendorCategory(mallcode)
-            datas["user_mall"] = self.model.getUserMall(mallcode)
-            datas["users"] = self.model.getUsers(mallcode)
+            # datas["user_mall"] = self.model.getUserMall(mallcode)
+            # datas["users"] = self.model.getUsers(mallcode)
            
         except Exception as e:
             str_error = str(e)
             errorMessage['status']=1
             errorMessage['message'] = str_error
+            logger.exception("Exception occurred: %s", str_error)
         if str_error is None:
             response['status']=0
             response['message']='success'
             response['data']=datas
-            return json.dumps(response, default=default, indent=4)
+            return json.dumps(response, default=default)
         else:
             return json.dumps(errorMessage)
        

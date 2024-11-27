@@ -2,9 +2,17 @@ import sqlite3
 import pyodbc
 import configparser
 import time
+import logging
 
 config = configparser.ConfigParser()
 config.read(r'settings/config.txt') 
+
+# Create and configure logger
+logging.basicConfig(filename="Logs/unoLog/logs.log",
+                    format='%(asctime)s %(message)s',
+                    filemode='w')
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 
 class LiteDB:
@@ -78,6 +86,7 @@ class SQLServer:
                 return results
             except Exception as e:
                 retry_count = retry_count + 1
+                logger.exception("Exception occurred: %s", str(e))
                 time.sleep(1)
     def insert(self, statement):
         retry_flag = 3
@@ -89,6 +98,7 @@ class SQLServer:
                 break
             except Exception as e:
                 retry_count = retry_count + 1
+                logger.exception("Exception occurred: %s", str(e))
                 time.sleep(1)
     def remove(self, statement):
         retry_flag = 3

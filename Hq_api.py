@@ -1,6 +1,7 @@
 import json
 from flask import Flask, jsonify, request, make_response
 from gevent.pywsgi import WSGIServer
+from flask_cors import CORS
 from model import TaskModel
 from controller import TaskController
 import configparser 
@@ -36,9 +37,15 @@ config = configparser.ConfigParser()
 config.read(r'settings/config.txt') 
 ip =  config.get('hq_config', 'HQ_IP')
 port =  config.get('hq_config', 'Port')
+worker =  config.get('hq_config', 'worker')
 token ='eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTY1NDc1NDg1NCwiaWF0IjoxNjU0NzU0ODU0fQ.p6WAfLuC39cMk3XEF4LcU5iZy1rzbL0VTKVpTY7mRGQ'
+if worker == "":
+    worker=5
+else:
+   worker = int(worker)
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/api/post-sales-integration', methods=['POST'])
 def handle_sales():
@@ -53,6 +60,7 @@ def handle_sales():
         response_obj = { 'status' : 1, 'message': str(e) }
         logger.exception("Exception occurred: %s", response_obj)
         return make_response(jsonify(response_obj), 500)
+
 @app.route('/api/post-maintenance', methods=['POST'])
 def handle_maintenance():
     bearer = request.headers.get('Authorization') 
@@ -68,4 +76,5 @@ def handle_maintenance():
         return make_response(jsonify(response_obj), 500)
 if __name__ == "__main__":
     http_server = WSGIServer((ip, int(port)), app)
+    http_server.spawn = worker #Create 5 Workers
     http_server.serve_forever()
