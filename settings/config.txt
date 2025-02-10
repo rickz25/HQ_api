@@ -27,3 +27,6 @@ bulk_limit=100
 
 #handle task per request
 worker=5
+
+#Maintenance file path
+filepath=D:/TMS/htdocs/tms-ayala/storage/app/Maintenance Data Update

@@ -1,9 +1,4 @@
-import sqlite3
-import pyodbc
-import configparser
-import time
-import logging
-
+import pyodbc, configparser, time, logging
 config = configparser.ConfigParser()
 config.read(r'settings/config.txt') 
 
@@ -13,37 +8,6 @@ logging.basicConfig(filename="Logs/unoLog/logs.log",
                     filemode='w')
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
-
-
-class LiteDB:
-    def __init__(self, db):
-        self.conn = sqlite3.connect(db,check_same_thread=False)
-        self.cur = self.conn.cursor()
-        # self.cur.execute(
-        #     "CREATE TABLE IF NOT EXISTS settings (id INTEGER PRIMARY KEY, part text, customer text, retailer text, price text)")
-        self.conn.commit()
-
-    def fetchSetting(self):
-        self.cur.execute("SELECT * FROM settings")
-        rows = self.cur.fetchone()
-        return rows
-    def getStatus(self):
-        self.cur.execute("SELECT * FROM status")
-        rows = self.cur.fetchone()
-        return rows
-
-    def insert(self, part, customer, retailer, price):
-        self.cur.execute("INSERT INTO settings VALUES (NULL, ?, ?, ?, ?)",
-                         (part, customer, retailer, price))
-        self.conn.commit()
-
-    def remove(self, id):
-        self.cur.execute("DELETE FROM settings WHERE id=?", (id,))
-        self.conn.commit()
-    def __del__(self):
-        self.conn.close()
-
-
 class SQLServer:
     def __init__(self):
         # db = LiteDB('app/db/db.sqlite')
@@ -86,7 +50,7 @@ class SQLServer:
                 return results
             except Exception as e:
                 retry_count = retry_count + 1
-                logger.exception("Exception occurred: %s", str(e))
+                logger.exception("Exception occurred: %s", e)
                 time.sleep(1)
     def insert(self, statement):
         retry_flag = 3
@@ -98,7 +62,7 @@ class SQLServer:
                 break
             except Exception as e:
                 retry_count = retry_count + 1
-                logger.exception("Exception occurred: %s", str(e))
+                logger.exception("Exception occurred: %s", e)
                 time.sleep(1)
     def remove(self, statement):
         retry_flag = 3

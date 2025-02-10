@@ -1,20 +1,17 @@
-import json
+import os, json, configparser, logging, psutil
 from flask import Flask, jsonify, request, make_response
 from gevent.pywsgi import WSGIServer
+from gevent import monkey
+monkey.patch_all()
 from flask_cors import CORS
 from model import TaskModel
 from controller import TaskController
-import configparser 
-import logging
-import psutil
-import os
+# import gevent
 
 # kill process when double run the program
 process_to_kill = "Hq_api.exe"
-
 # get PID of the current process
 my_pid = os.getpid()
-
 # iterate through all running processes
 for p in psutil.process_iter():
     # if it's process we're looking for...
@@ -22,7 +19,6 @@ for p in psutil.process_iter():
         # and if the process has a different PID than the current process, kill it
         if not p.pid == my_pid:
             p.terminate()
-
 
 # Create and configure logger
 logging.basicConfig(filename="Logs/unoLog/logs.log",
@@ -53,12 +49,17 @@ def handle_sales():
     bearer_token = bearer.split()[1]
     try:
         if token == bearer_token:
-            datas = json.loads(request.data)
-            response = controller.insert_data(datas)
-            return make_response(jsonify(response), 200)
+            response_data = request.data
+            if is_json(response_data):
+                response = controller.post_data(response_data)
+                return make_response(jsonify(response), 200)
+            else:
+                response_obj = { 'status' : 1, 'message': 'Data is not in json format' }
+                logger.exception("Data is not in json format: %s", response_obj)
+                return make_response(jsonify(response_obj), 400)
     except Exception as e:
-        response_obj = { 'status' : 1, 'message': str(e) }
-        logger.exception("Exception occurred: %s", response_obj)
+        response_obj = { 'status' : 1, 'message': e }
+        logger.exception("00 - Exception occurred: %s", response_obj)
         return make_response(jsonify(response_obj), 500)
 
 @app.route('/api/post-maintenance', methods=['POST'])
@@ -71,10 +72,18 @@ def handle_maintenance():
             response = controller.get_data(datas['mallcode'])
             return make_response(jsonify(response), 200)
     except Exception as e:
-        response_obj = { 'status' : 1, 'message': str(e) }
-        logger.exception("Exception occurred: %s", response_obj)
+        response_obj = { 'status' : 1, 'message': e }
+        logger.exception("01 - Exception occurred: %s", response_obj)
         return make_response(jsonify(response_obj), 500)
-if __name__ == "__main__":
-    http_server = WSGIServer((ip, int(port)), app)
-    http_server.spawn = worker #Create 5 Workers
-    http_server.serve_forever()
+    
+def is_json(myjson):
+    try:
+        json.loads(myjson)
+    except ValueError as e:
+        return False
+    return True
+
+# Run the app
+http_server = WSGIServer((ip, int(port)), app)
+# http_server.spawn = worker #Create 5 Workers
+http_server.serve_forever()
