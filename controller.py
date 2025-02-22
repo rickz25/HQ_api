@@ -14,6 +14,12 @@ config = configparser.ConfigParser()
 config.read(r'settings/config.txt') 
 filepath =  config.get('hq_config', 'filepath')
 
+bulklimit =  config.get('hq_config', 'bulk_limit')
+if bulklimit == "":
+    bulklimit=100
+else:
+   bulklimit = int(bulklimit)
+
 # convertion of datetime and decimal
 def default(obj):
     if isinstance(obj, (datetime, date)):
@@ -30,29 +36,16 @@ class TaskController:
     
     def post_data(self, datas):
         try:
-            data = json.loads(datas)
-            #header_sales
-            if data['header_sales']:
-                self.model.QueryStatementDelete(data['header_sales']['delete'])
-                self.model.QueryStatementInsert(data['header_sales']['insert'])
-            #hourly_sales
-            if data['hourly_sales']:
-                hourly = data['hourly_sales']
-                for i in hourly:
-                    self.model.QueryStatementDelete(i['delete'])
-                    self.model.QueryStatementInsert(i['insert'])
-            #eod_sales
-            if data['eod_sales']:
-                self.model.QueryStatementDelete(data['eod_sales']['delete'])
-                self.model.QueryStatementInsert(data['eod_sales']['insert'])
-            #logs
-            if data['logs']:
-                self.model.QueryStatementDelete(data['logs']['delete'])
-                self.model.QueryStatementInsert(data['logs']['insert'])
+            if datas:
+                for batch in batched(datas, bulklimit):
+                        sql_per_batch = ''
+                        for sql in batch:
+                                sql_per_batch +=sql
+                        self.model.QueryStatementInsert(sql_per_batch)
             return { 'status' : 0, 'message': 'Success' }
         except Exception as e:
+            logger.exception("Exception occurred: %s", str(e))
             return { 'status' : 1, 'message': 'Error' }
-            # logger.exception("Exception occurred: %s", str(e))
         
     def get_data(self, mallcode):
         datas=[]

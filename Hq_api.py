@@ -51,7 +51,8 @@ def handle_sales():
         if token == bearer_token:
             response_data = request.data
             if is_json(response_data):
-                response = controller.post_data(response_data)
+                datas = json.loads(response_data)
+                response = controller.post_data(datas)
                 return make_response(jsonify(response), 200)
             else:
                 response_obj = { 'status' : 1, 'message': 'Data is not in json format' }
