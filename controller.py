@@ -38,10 +38,10 @@ class TaskController:
         try:
             if datas:
                 for batch in batched(datas, bulklimit):
-                        sql_per_batch = ''
+                        # sql_per_batch = ''
                         for sql in batch:
-                                sql_per_batch +=sql
-                        self.model.QueryStatementInsert(sql_per_batch)
+                            self.model.QueryStatementInsert(sql)
+                        # self.model.QueryStatementInsert(sql_per_batch)
             return { 'status' : 0, 'message': 'Success' }
         except Exception as e:
             logger.exception("Exception occurred: %s", str(e))
